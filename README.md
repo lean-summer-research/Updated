@@ -4,7 +4,7 @@ A Lean 4 formalization of finite semigroup theory, built on [Mathlib](https://gi
 
 ## Overview
 
-The central objects of study are finite semigroups and their internal structure, with an emphasis on the five **Green's relations** (𝓡, 𝓛, 𝓙, 𝓗, 𝓓) and the representation theory of simple and 0-simple semigroups via Rees matrix constructions.
+We study finite semigroups and their internal structure, with an emphasis on the five **Green's relations** (𝓡, 𝓛, 𝓙, 𝓗, 𝓓) and the representation theory of simple and 0-simple semigroups via Rees matrix constructions.
 
 **Highlights:**
 - Full definitions and basic theory of all five Green's relations

@@ -107,7 +107,7 @@ noncomputable def sandwich : RQuot S → LQuot S → C.HClass := fun i j =>
 /-! ### Decomposition -/
 
 omit [Finite S] [IsSimple S] in
-/-- Every element of `S` decomposes as `s i * g * r j` for unique `i, j, g`. -/
+/-- Every element of `S` decomposes as `s i * g * r j` for some `i, j, g`. -/
 theorem decomp (x : S) :
     ∃ (i : RQuot S) (j : LQuot S) (g : C.HClass), x = C.s i * ↑g * C.r j := by
   let rS : Setoid S := ⟨(· 𝓡 ·), REquiv.isEquivalence⟩
@@ -127,7 +127,7 @@ theorem decomp (x : S) :
 
 /-! ### Uniqueness -/
 
-/-- The Rees decomposition is unique: indices and group element are determined by `x`. -/
+/-- The Rees decomposition is unique. -/
 theorem unique (x : S) (i i' : RQuot S) (j j' : LQuot S) (g g' : C.HClass)
     (hx : x = C.s i * ↑g * C.r j) (hx' : x = C.s i' * ↑g' * C.r j') :
     i = i' ∧ j = j' ∧ g = g' := by
