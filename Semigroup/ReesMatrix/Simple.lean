@@ -142,16 +142,20 @@ theorem unique (x : S) (i i' : RQuot S) (j j' : LQuot S) (g g' : C.HClass)
     have h := REquiv.lmul_compat hgR (C.s i)
     rwa [C.s_mul_e] at h
   have h_xRsi' : x 𝓡 C.s i' := by
-    rw [hx']; refine (REquiv.of_rPreorder_and_jEquiv RPreorder.mul_right_self
+    rw [hx']
+    refine (REquiv.of_rPreorder_and_jEquiv RPreorder.mul_right_self
       (JEquiv.ofSimple ..)).trans ?_
-    have h := REquiv.lmul_compat hgR' (C.s i'); rwa [C.s_mul_e] at h
+    have h := REquiv.lmul_compat hgR' (C.s i')
+    rwa [C.s_mul_e] at h
   have hi : i = i' := by
     have := @Quotient.sound S rS _ _ (h_xRsi.symm.trans h_xRsi')
     rwa [C.hsQ, C.hsQ] at this
   have h_xLrj : x 𝓛 C.r j := by
-    rw [hx]; exact LEquiv.of_lPreorder_and_jEquiv LPreorder.mul_left_self (JEquiv.ofSimple ..)
+    rw [hx]
+    exact LEquiv.of_lPreorder_and_jEquiv LPreorder.mul_left_self (JEquiv.ofSimple ..)
   have h_xLrj' : x 𝓛 C.r j' := by
-    rw [hx']; exact LEquiv.of_lPreorder_and_jEquiv LPreorder.mul_left_self (JEquiv.ofSimple ..)
+    rw [hx']
+    exact LEquiv.of_lPreorder_and_jEquiv LPreorder.mul_left_self (JEquiv.ofSimple ..)
   have hj : j = j' := by
     have := @Quotient.sound S lS _ _ (h_xLrj.symm.trans h_xLrj')
     rwa [C.hrQ, C.hrQ] at this
