@@ -28,11 +28,7 @@ and conversely every Rees matrix semigroup over a group is simple.
 * `Semigroup.ReesData.decomp` — every element decomposes as `s i * g * r j`.
 * `Semigroup.ReesData.unique` — the decomposition is unique.
 * `Semigroup.ReesData.mulEquiv` — the multiplicative equivalence `S ≃* Rees C.sandwich`.
-* `Semigroup.simple_iff_rees_forward` — every finite simple semigroup is isomorphic
-  to a Rees matrix semigroup over a group.
 * `Semigroup.Rees.isSimple` — every Rees matrix semigroup (without zero) is simple.
-* `Semigroup.simple_implies_rees` — the forward direction.
-* `Semigroup.rees_implies_simple` — the backward direction.
 -/
 
 namespace Semigroup
@@ -51,11 +47,8 @@ abbrev LQuot (S : Type*) [Semigroup S] : Type _ :=
 
 /-! ## Rees coordinate data -/
 
-/-- A Rees coordinate system for a semigroup `S`: an anchor idempotent `e`,
-row representatives `s` (one per 𝓡-class, each 𝓛-related to `e`),
-and column representatives `r` (one per 𝓛-class, each 𝓡-related to `e`). -/
+/-- A Rees coordinate system for a semigroup `S` -/
 structure ReesData (S : Type*) [Semigroup S] where
-  /-- The anchor idempotent. -/
   e : S
   /-- Proof that `e` is idempotent. -/
   he : IsIdempotentElem e
@@ -78,26 +71,35 @@ variable {S : Type uS} [Semigroup S] (C : ReesData S)
 
 /-! ### Derived definitions -/
 
-/-- The 𝓗-class of the anchor idempotent, as a subtype. -/
+/-- The 𝓗-class of the idempotent, as a subtype. -/
 abbrev HClass : Type uS := {x : S // x ∈ ⟦C.e⟧𝓗}
 
 /-- The group structure on the 𝓗-class of the anchor idempotent. -/
 noncomputable instance instGroupHClass : Group C.HClass :=
   HEquiv.group_of_idempotent' C.he
 
-/-- Row representatives are left-absorbed by `e`: `s i * e = s i`. -/
+/-- 𝓡-class representatives are left-absorbed by `e`: `s i * e = s i`. -/
 theorem s_mul_e (i : RQuot S) : C.s i * C.e = C.s i :=
   (LPreorder.le_idempotent C.he _).mp (C.hsL i).1
+
+/-- 𝓛-class representatives are right-absorbed by `e`: `e * r j = r j`. -/
+theorem e_mul_r (j : LQuot S) : C.e * C.r j = C.r j :=
+  (RPreorder.le_idempotent C.he _).mp (C.hrR j).1
 
 variable [Finite S] [IsSimple S]
 
 /-- The sandwich matrix: `P(i,j) = r j * s i`, which lies in the 𝓗-class of `e`. -/
 noncomputable def sandwich : RQuot S → LQuot S → C.HClass := fun i j =>
-  ⟨C.r j * C.s i, (HEquiv.iff_rEquiv_and_lEquiv _ _).2
-    ⟨(REquiv.of_rPreorder_and_jEquiv RPreorder.mul_right_self
-        (JEquiv.ofSimple ..)).trans (C.hrR j),
-     (LEquiv.of_lPreorder_and_jEquiv LPreorder.mul_left_self
-        (JEquiv.ofSimple ..)).trans (C.hsL i)⟩⟩
+  ⟨C.r j * C.s i, by
+    simp only [HEquiv.set_def, Set.mem_setOf_eq]
+    rw [HEquiv.iff_rEquiv_and_lEquiv]
+    constructor
+    · refine REquiv.of_rPreorder_and_jEquiv ?_ (JEquiv.ofSimple ..)
+      use ↑(C.r j * C.s i)
+      simp[← mul_assoc, ← WithOne.coe_mul, e_mul_r]
+    · refine LEquiv.of_lPreorder_and_jEquiv ?_ (JEquiv.ofSimple ..)
+      use ↑(C.r j * C.s i)
+      simp[← WithOne.coe_mul, mul_assoc, s_mul_e]⟩
 
 @[simp] theorem sandwich_val (i : RQuot S) (j : LQuot S) :
     (C.sandwich i j : S) = C.r j * C.s i := rfl
@@ -111,19 +113,17 @@ theorem decomp (x : S) :
   let rS : Setoid S := ⟨(· 𝓡 ·), REquiv.isEquivalence⟩
   let lS : Setoid S := ⟨(· 𝓛 ·), LEquiv.isEquivalence⟩
   use Quotient.mk rS x, Quotient.mk lS x
-  have hsiR : C.s (Quotient.mk rS x) 𝓡 x := Quotient.exact (C.hsQ _)
-  have hrjL : C.r (Quotient.mk lS x) 𝓛 x := Quotient.exact (C.hrQ _)
-  have hmem := (mul_in_inter_iff_exists_idempotent
-    (C.s (Quotient.mk rS x)) (C.r (Quotient.mk lS x))).2
+  have hsiR : C.s ⟦x⟧ 𝓡 x := Quotient.exact (C.hsQ _)
+  have hrjL : C.r ⟦x⟧ 𝓛 x := Quotient.exact (C.hrQ _)
+  have hmem := (mul_in_inter_iff_exists_idempotent (C.s ⟦x⟧) (C.r ⟦x⟧)).mpr
       ⟨C.e, C.he, (C.hrR _).symm, (C.hsL _).symm⟩
-  have hH : C.s _ * C.r _ 𝓗 x :=
-    (HEquiv.iff_rEquiv_and_lEquiv _ _).2 ⟨hmem.1.trans hsiR, hmem.2.trans hrjL⟩
+  have hH : C.s ⟦x⟧ * C.r ⟦x⟧ 𝓗 x :=
+    (HEquiv.iff_rEquiv_and_lEquiv _ _).mpr ⟨hmem.1.trans hsiR, hmem.2.trans hrjL⟩
   obtain ⟨h, hh_mem, hh_eq⟩ := hmem.1.symm.surjOn_hClass rfl hH.symm
-  obtain ⟨g, hg_mem, hg_eq⟩ := (C.hsL _).symm.surjOn_hClass (C.s_mul_e _) hh_mem
+  obtain ⟨g, hg_mem, hg_eq⟩ := (C.hsL ⟦x⟧).symm.surjOn_hClass (C.s_mul_e ⟦x⟧) hh_mem
   exact ⟨⟨g, hg_mem⟩, by
-    change x = C.s (Quotient.mk rS x) * g * C.r (Quotient.mk lS x)
-    calc x = h * C.r _ := (hh_eq : h * C.r _ = x).symm
-         _ = C.s _ * g * C.r _ := by rw [← (hg_eq : C.s _ * g = h)]⟩
+    simp_all only
+    rw [hg_eq, hh_eq]⟩
 
 /-! ### Uniqueness -/
 
@@ -136,9 +136,11 @@ theorem unique (x : S) (i i' : RQuot S) (j j' : LQuot S) (g g' : C.HClass)
   have hgR : (↑g : S) 𝓡 C.e := g.prop.to_rEquiv
   have hgR' : (↑g' : S) 𝓡 C.e := g'.prop.to_rEquiv
   have h_xRsi : x 𝓡 C.s i := by
-    rw [hx]; refine (REquiv.of_rPreorder_and_jEquiv RPreorder.mul_right_self
+    rw [hx]
+    refine (REquiv.of_rPreorder_and_jEquiv RPreorder.mul_right_self
       (JEquiv.ofSimple ..)).trans ?_
-    have h := REquiv.lmul_compat hgR (C.s i); rwa [C.s_mul_e] at h
+    have h := REquiv.lmul_compat hgR (C.s i)
+    rwa [C.s_mul_e] at h
   have h_xRsi' : x 𝓡 C.s i' := by
     rw [hx']; refine (REquiv.of_rPreorder_and_jEquiv RPreorder.mul_right_self
       (JEquiv.ofSimple ..)).trans ?_
@@ -229,16 +231,14 @@ noncomputable def ofSimple [Inhabited S] : ReesData S :=
     obtain ⟨y, rfl⟩ := Quotient.exists_rep i
     obtain ⟨z, hzR, hzL⟩ : y 𝓓 e := DEquiv.ofSimple y e
     exact ⟨z, hzL, Quotient.sound hzR.symm⟩
-  {
-    e := e
+  { e := e
     he := he
     s := fun i => Classical.choose (h_s i)
     r := fun j => Classical.choose (h_r j)
     hsL := fun i => (Classical.choose_spec (h_s i)).1
     hrR := fun j => (Classical.choose_spec (h_r j)).1
     hsQ := fun i => (Classical.choose_spec (h_s i)).2
-    hrQ := fun j => (Classical.choose_spec (h_r j)).2
-  }
+    hrQ := fun j => (Classical.choose_spec (h_r j)).2 }
 
 end ReesData
 
@@ -250,7 +250,7 @@ variable {S : Type uS} [Finite S] [Semigroup S] [IsSimple S] [Inhabited S]
 
 open Semigroup
 
-/-- The Rees matrix semigroup type isomorphic to a finite simple semigroup `S`. -/
+/-- The Rees matrix semigroup type that is isomorphic to a finite simple semigroup `S`. -/
 noncomputable abbrev reesOf (S : Type uS) [Finite S] [Semigroup S] [IsSimple S]
     [Inhabited S] : Type uS :=
   Rees (ReesData.ofSimple (S := S)).sandwich
@@ -259,13 +259,6 @@ noncomputable abbrev reesOf (S : Type uS) [Finite S] [Semigroup S] [IsSimple S]
 noncomputable def reesEquiv (S : Type uS) [Finite S] [Semigroup S] [IsSimple S]
     [Inhabited S] : S ≃* reesOf S :=
   (ReesData.ofSimple (S := S)).mulEquiv
-
-/-- Forward direction of the Rees Matrix Theorem:
-A finite simple semigroup is isomorphic to a Rees matrix semigroup (without zero). -/
-theorem simple_iff_rees_forward :
-    ∃ (I J G : Type uS) (_ : Group G) (P : I → J → G), Nonempty (S ≃* Rees P) :=
-  let C := ReesData.ofSimple (S := S)
-  ⟨RQuot S, LQuot S, C.HClass, C.instGroupHClass, C.sandwich, ⟨C.mulEquiv⟩⟩
 
 end ReesTheorem
 
@@ -294,37 +287,5 @@ instance Rees.instIsSimple [Nonempty I] [Nonempty J] :
     exact ⟨↑s, ↑t, by simp [← WithOne.coe_mul, hst]⟩
 
 end ReesIsSimple
-
-/-! ## Rees iff Simple (biconditional) -/
-
-section ReesIffSimple
-
-open Semigroup
-
-/-- **Rees–Suschkewitsch Theorem (forward).**
-A finite simple semigroup is isomorphic to a Rees matrix semigroup.
-See `simple_iff_rees_forward` for the full proof. -/
-theorem simple_implies_rees {S : Type uS} [Finite S] [Semigroup S]
-    [IsSimple S] [Inhabited S] :
-    ∃ (I J G : Type uS) (_ : Group G) (P : I → J → G), Nonempty (S ≃* Rees P) :=
-  simple_iff_rees_forward
-
-/-- **Rees–Suschkewitsch Theorem (backward).**
-A semigroup isomorphic to a Rees matrix semigroup over a group is simple. -/
-@[reducible] def rees_implies_simple (S : Type*) [Semigroup S]
-    {I J G : Type*} [Group G] (P : I → J → G)
-    [Nonempty I] [Nonempty J]
-    (iso : S ≃* Rees P) : IsSimple S where
-  j_total := by
-    intro x y
-    obtain ⟨s, t, hst⟩ := Rees.isSimple P (iso y) (iso x)
-    refine ⟨↑(iso.symm s), ↑(iso.symm t), ?_⟩
-    simp only [← WithOne.coe_mul]
-    congr 1
-    have : iso (iso.symm s * y * iso.symm t) = s * iso y * t := by
-      simp [map_mul]
-    rw [← iso.injective.eq_iff, this, hst]
-
-end ReesIffSimple
 
 end Semigroup
