@@ -121,8 +121,8 @@ theorem decomp (x : S) :
     (HEquiv.iff_rEquiv_and_lEquiv _ _).mpr ⟨hmem.1.trans hsiR, hmem.2.trans hrjL⟩
   obtain ⟨h, hh_mem, hh_eq⟩ := hmem.1.symm.surjOn_hClass rfl hH.symm
   obtain ⟨g, hg_mem, hg_eq⟩ := (C.hsL ⟦x⟧).symm.surjOn_hClass (C.s_mul_e ⟦x⟧) hh_mem
+  simp_all only
   exact ⟨⟨g, hg_mem⟩, by
-    simp_all only
     rw [hg_eq, hh_eq]⟩
 
 /-! ### Uniqueness -/
@@ -135,33 +135,31 @@ theorem unique (x : S) (i i' : RQuot S) (j j' : LQuot S) (g g' : C.HClass)
   let lS : Setoid S := ⟨(· 𝓛 ·), LEquiv.isEquivalence⟩
   have hgR : (↑g : S) 𝓡 C.e := g.prop.to_rEquiv
   have hgR' : (↑g' : S) 𝓡 C.e := g'.prop.to_rEquiv
-  have h_xRsi : x 𝓡 C.s i := by
-    rw [hx]
-    refine (REquiv.of_rPreorder_and_jEquiv RPreorder.mul_right_self
-      (JEquiv.ofSimple ..)).trans ?_
-    have h := REquiv.lmul_compat hgR (C.s i)
-    rwa [C.s_mul_e] at h
-  have h_xRsi' : x 𝓡 C.s i' := by
-    rw [hx']
-    refine (REquiv.of_rPreorder_and_jEquiv RPreorder.mul_right_self
-      (JEquiv.ofSimple ..)).trans ?_
-    have h := REquiv.lmul_compat hgR' (C.s i')
-    rwa [C.s_mul_e] at h
   have hi : i = i' := by
-    have := @Quotient.sound S rS _ _ (h_xRsi.symm.trans h_xRsi')
-    rwa [C.hsQ, C.hsQ] at this
-  have h_xLrj : x 𝓛 C.r j := by
-    rw [hx]
-    exact LEquiv.of_lPreorder_and_jEquiv LPreorder.mul_left_self (JEquiv.ofSimple ..)
-  have h_xLrj' : x 𝓛 C.r j' := by
-    rw [hx']
-    exact LEquiv.of_lPreorder_and_jEquiv LPreorder.mul_left_self (JEquiv.ofSimple ..)
+    have h_xRsi : x 𝓡 C.s i := by
+      rw [hx]
+      refine REquiv.of_rPreorder_and_jEquiv ?_ (JEquiv.ofSimple ..)
+      simp [mul_assoc]
+    have h_xRsi' : x 𝓡 C.s i' := by
+      rw [hx']
+      refine REquiv.of_rPreorder_and_jEquiv ?_ (JEquiv.ofSimple ..)
+      simp [mul_assoc]
+    rw [← C.hsQ i, ← C.hsQ i']
+    exact Quotient.sound (h_xRsi.symm.trans h_xRsi')
   have hj : j = j' := by
-    have := @Quotient.sound S lS _ _ (h_xLrj.symm.trans h_xLrj')
-    rwa [C.hrQ, C.hrQ] at this
+    have h_xLrj : x 𝓛 C.r j := by
+      rw [hx]
+      exact LEquiv.of_lPreorder_and_jEquiv LPreorder.mul_left_self (JEquiv.ofSimple ..)
+    have h_xLrj' : x 𝓛 C.r j' := by
+      rw [hx']
+      exact LEquiv.of_lPreorder_and_jEquiv LPreorder.mul_left_self (JEquiv.ofSimple ..)
+    rw [← C.hrQ j, ← C.hrQ j']
+    exact Quotient.sound (h_xLrj.symm.trans h_xLrj')
   refine ⟨hi, hj, ?_⟩
-  have h_eq : C.s i * ↑g * C.r j = C.s i * ↑g' * C.r j := by
-    rw [← hi, ← hj] at hx'; exact hx.symm.trans hx'
+  apply Subtype.ext
+  have inj := LEquiv.injOn_hClass (C.hsL i).symm (C.s_mul_e i) g.prop g'.prop
+  simp only at inj
+  apply inj
   have h_sir_Rsi := ((mul_in_inter_iff_exists_idempotent (C.s i) (C.r j)).2
     ⟨C.e, C.he, (C.hrR j).symm, (C.hsL i).symm⟩).1.symm
   have mk_h_mem (g₀ : C.HClass) : C.s i * ↑g₀ ∈ ⟦C.s i⟧𝓗 := by
@@ -169,8 +167,10 @@ theorem unique (x : S) (i i' : RQuot S) (j j' : LQuot S) (g g' : C.HClass)
       ⟨C.e, C.he, g₀.prop.to_rEquiv.symm, (C.hsL i).symm⟩
     exact (HEquiv.iff_rEquiv_and_lEquiv _ _).2
       ⟨h.1, h.2.trans (g₀.prop.to_lEquiv.trans (C.hsL i).symm)⟩
-  exact Subtype.ext ((LEquiv.injOn_hClass (C.hsL i).symm (C.s_mul_e i)) g.prop g'.prop
-    ((REquiv.injOn_hClass h_sir_Rsi rfl) (mk_h_mem g) (mk_h_mem g') h_eq))
+  have inj' := REquiv.injOn_hClass h_sir_Rsi rfl (mk_h_mem g) (mk_h_mem g')
+  simp only at inj'
+  apply inj'
+  rw [← hx, hx', hi, hj]
 
 /-! ### Forward and inverse maps -/
 
@@ -198,26 +198,21 @@ noncomputable def mulEquiv : S ≃* Rees C.sandwich where
     obtain ⟨hi, hj, hg⟩ := C.unique _ _ z.i _ z.j _ z.g (C.toRees_spec _) rfl
     exact Rees.ext (hi := hi) (hj := hj) (hg := hg)
   map_mul' x y := by
-    have hx := C.toRees_spec x; have hy := C.toRees_spec y
-    have hcoe : ∀ (a b : C.HClass), (↑(a * b) : S) = ↑a * ↑b := fun _ _ => rfl
-    have hPval : ∀ i j, (↑(C.sandwich i j) : S) = C.r j * C.s i := fun _ _ => rfl
     have h_cand : x * y = C.s (C.toRees x).i *
         ↑((C.toRees x).g * C.sandwich (C.toRees y).i (C.toRees x).j * (C.toRees y).g) *
         C.r (C.toRees y).j := by
-      calc x * y
-          = (C.s (C.toRees x).i * ↑(C.toRees x).g * C.r (C.toRees x).j) *
-            (C.s (C.toRees y).i * ↑(C.toRees y).g * C.r (C.toRees y).j) := by
-              conv_lhs => rw [hx, hy]
-          _ = C.s (C.toRees x).i *
-              ↑((C.toRees x).g * C.sandwich (C.toRees y).i (C.toRees x).j * (C.toRees y).g) *
-              C.r (C.toRees y).j := by simp only [hcoe, hPval, mul_assoc]
+      have hx := C.toRees_spec x; have hy := C.toRees_spec y
+      have hcoe : ∀ (a b : C.HClass), (↑(a * b) : S) = ↑a * ↑b := fun _ _ => rfl
+      have hPval : ∀ i j, (↑(C.sandwich i j) : S) = C.r j * C.s i := fun _ _ => rfl
+      grind
     obtain ⟨hi, hj, hg⟩ := C.unique _ _ _ _ _ _ _ (C.toRees_spec (x * y)) h_cand
-    change C.toRees (x * y) = C.toRees x * C.toRees y
-    have : C.toRees x * C.toRees y =
-        ⟨(C.toRees x).i, (C.toRees y).j,
-         (C.toRees x).g * C.sandwich (C.toRees y).i (C.toRees x).j * (C.toRees y).g⟩ := rfl
-    rw [this]
-    exact Rees.ext (hi := hi) (hj := hj) (hg := hg)
+    apply Rees.ext
+    · rw [hi]
+      simp
+    · rw [hj]
+      simp
+    · rw [hg]
+      simp
 
 /-! ### Construction from simplicity -/
 
