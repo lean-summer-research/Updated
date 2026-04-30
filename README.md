@@ -2,20 +2,6 @@
 
 A Lean 4 formalization of finite semigroup theory, built on [Mathlib](https://github.com/leanprover-community/mathlib4). This library develops the structural theory of semigroups: Green's relations, ideals, simple semigroups, substructures, and the Rees–Suschkewitsch classification theorem.
 
-## Overview
-
-We study finite semigroups and their internal structure, with an emphasis on the five **Green's relations** (𝓡, 𝓛, 𝓙, 𝓗, 𝓓) and the representation theory of simple and 0-simple semigroups via Rees matrix constructions.
-
-**Highlights:**
-- Full definitions and basic theory of all five Green's relations
-- Green's Lemma (bijections between 𝓡- and 𝓛-classes)
-- The Location Theorem and group structure on H-classes of idempotents
-- The **D-J Theorem**: in finite semigroups, 𝓓 = 𝓙
-- The **Rees–Suschkewitsch Theorem**: finite simple semigroups are exactly Rees matrix semigroups over groups
-- Ideal theory and its relationship to Green's 𝓙-order
-- Exponentiation for semigroups (with positive natural number exponents)
-- Idempotent powers: every element of a finite semigroup has an idempotent power
-
 ## Repository Structure
 
 ```
