@@ -1,5 +1,3 @@
-TODO- Update this for the new file structure
-
 # Semigroup
 
 A Lean 4 formalization of finite semigroup theory, built on [Mathlib](https://github.com/leanprover-community/mathlib4). This library develops the structural theory of semigroups: Green's relations, ideals, simple semigroups, substructures, and the Rees–Suschkewitsch classification theorem.
@@ -9,8 +7,7 @@ A Lean 4 formalization of finite semigroup theory, built on [Mathlib](https://gi
 ```
 Semigroup.lean              -- Top-level imports
 Semigroup/
-  Power.lean                -- Exponentiation for semigroups (Pow S ℕ+)
-  Idempotent.lean           -- Idempotent elements; every element has an idempotent power
+  SemigroupIdempotentPow.lean -- Idempotent elements; every element has an idempotent power
   Regular.lean              -- Regular elements and regular semigroups
   Simple.lean               -- Simple and 0-simple semigroups
   Substructure.lean         -- Subsemigroups, submonoids, subgroups
