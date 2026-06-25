@@ -38,7 +38,8 @@ variable {S : Type*} [Semigroup S]
 
 /-- In Finite semigroups, `x * y` is in the intersection of the 𝓡-class of `x` and the 𝓛-class
 of `y` iff `x`, `y`, and `x * y` are 𝓓-Equivalent. -/
-theorem DEquiv.mul_in_inter_iff_equiv (x y : S) [Finite S] :
+theorem DEquiv.mul_in_inter_iff_equiv (x y : S) [Finite S] [Pow (WithOne S) ℕ+]
+  [PNatPowAssoc (WithOne S)] :
     x * y ∈ ⟦x⟧𝓡 ∩ ⟦y⟧𝓛 ↔ x 𝓓 y ∧ x * y 𝓓 x := by
   simp_all only [REquiv.set, LEquiv.set, Set.mem_inter_iff, Set.mem_setOf_eq]
   constructor

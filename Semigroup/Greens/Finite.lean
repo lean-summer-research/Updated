@@ -1,6 +1,6 @@
 import Mathlib.Data.Fintype.Option
 import Semigroup.Greens.Basic
-import Semigroup.Idempotent
+import Semigroup.SemigroupIdempotentPow
 
 /-!
 # Finite Semigroups and Green's Relations
@@ -17,7 +17,8 @@ This file proves theorems about Green's relations in finite semigroups.
 
 namespace Semigroup
 
-variable {S : Type*} [Semigroup S] [Finite S] {x y u v : S}
+variable {S : Type*} [Semigroup S] [Finite S] [Pow (WithOne S) ℕ+] [PNatPowAssoc (WithOne S)]
+  {x y u v : S}
 
 /-! ### The D-J Theorem for Finite Semigroups -/
 

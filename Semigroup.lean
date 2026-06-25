@@ -10,8 +10,7 @@ import Semigroup.Ideal.Quotient
 import Semigroup.ReesMatrix.Defs
 import Semigroup.ReesMatrix.Simple
 import Semigroup.ReesMatrix.ZeroSimple
-import Semigroup.Idempotent
-import Semigroup.Power
 import Semigroup.Regular
 import Semigroup.Simple
 import Semigroup.Substructure
+import Semigroup.SemigroupIdempotentPow

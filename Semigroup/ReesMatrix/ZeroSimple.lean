@@ -1,7 +1,6 @@
 import Semigroup.ReesMatrix.Defs
 import Semigroup.Simple
 import Semigroup.Greens.Location
-import Semigroup.Idempotent
 import Semigroup.Greens.Finite
 import Semigroup.Ideal.Basic
 

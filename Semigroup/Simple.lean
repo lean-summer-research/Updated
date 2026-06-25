@@ -42,7 +42,8 @@ variable {S : Type*} [Semigroup S] [IsSimple S]
   ⟨IsSimple.j_total x y, IsSimple.j_total y x⟩
 
 /-- In a finite simple semigroup, all elements are 𝓓-related. -/
-@[simp] lemma DEquiv.ofSimple [Finite S] (x y : S) : x 𝓓 y :=
+@[simp] lemma DEquiv.ofSimple [Finite S] [Pow (WithOne S) ℕ+] [PNatPowAssoc (WithOne S)] (x y : S) :
+    x 𝓓 y :=
   JEquiv.to_dEquiv <| JEquiv.ofSimple x y
 
 /-- In a simple semigroup, every nonempty two-sided ideal is the whole semigroup. -/
@@ -82,7 +83,8 @@ theorem JEquiv.ofZeroSimple (x y : S) (hx : x ≠ 0) (hy : y ≠ 0) : x 𝓙 y :
   ⟨JPreorder.ofZeroSimple x y hy, JPreorder.ofZeroSimple y x hx⟩
 
 /-- In a finite 0-simple semigroup, all nonzero elements are 𝓓-related. -/
-theorem DEquiv.ofZeroSimple [Finite S] (x y : S) (hx : x ≠ 0) (hy : y ≠ 0) : x 𝓓 y :=
+theorem DEquiv.ofZeroSimple [Finite S] [Pow (WithOne S) ℕ+] [PNatPowAssoc (WithOne S)]
+    (x y : S) (hx : x ≠ 0) (hy : y ≠ 0) : x 𝓓 y :=
   JEquiv.to_dEquiv <| JEquiv.ofZeroSimple x y hx hy
 
 end Semigroup

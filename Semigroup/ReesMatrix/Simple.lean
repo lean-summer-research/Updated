@@ -1,7 +1,7 @@
 import Semigroup.ReesMatrix.Defs
 import Semigroup.Simple
 import Semigroup.Greens.Location
-import Semigroup.Idempotent
+import Semigroup.SemigroupIdempotentPow
 
 /-!
 # Rees–Suschkewitsch Theorem (Simple Case)
@@ -86,7 +86,7 @@ theorem s_mul_e (i : RQuot S) : C.s i * C.e = C.s i :=
 theorem e_mul_r (j : LQuot S) : C.e * C.r j = C.r j :=
   (RPreorder.le_idempotent C.he _).mp (C.hrR j).1
 
-variable [Finite S] [IsSimple S]
+variable [Finite S] [IsSimple S] [Pow (WithOne S) ℕ+] [PNatPowAssoc (WithOne S)]
 
 /-- The sandwich matrix: `P(i,j) = r j * s i`, which lies in the 𝓗-class of `e`. -/
 noncomputable def sandwich : RQuot S → LQuot S → C.HClass := fun i j =>
@@ -106,7 +106,7 @@ noncomputable def sandwich : RQuot S → LQuot S → C.HClass := fun i j =>
 
 /-! ### Decomposition -/
 
-omit [Finite S] [IsSimple S] in
+omit [Finite S] [IsSimple S] [Pow (WithOne S) ℕ+] [PNatPowAssoc (WithOne S)] in
 /-- Every element of `S` decomposes as `s i * g * r j` for some `i, j, g`. -/
 theorem decomp (x : S) :
     ∃ (i : RQuot S) (j : LQuot S) (g : C.HClass), x = C.s i * ↑g * C.r j := by
@@ -127,6 +127,7 @@ theorem decomp (x : S) :
 
 /-! ### Uniqueness -/
 
+-- TODO - seperate this into three lemmas
 /-- The Rees decomposition is unique. -/
 theorem unique (x : S) (i i' : RQuot S) (j j' : LQuot S) (g g' : C.HClass)
     (hx : x = C.s i * ↑g * C.r j) (hx' : x = C.s i' * ↑g' * C.r j') :
@@ -217,9 +218,9 @@ noncomputable def mulEquiv : S ≃* Rees C.sandwich where
 /-! ### Construction from simplicity -/
 
 /-- Construct a `ReesData` for a finite simple semigroup. -/
-noncomputable def ofSimple [Inhabited S] : ReesData S :=
-  let e := (default : S) ^ (exists_idempotent_pow (default : S)).choose
-  have he : IsIdempotentElem e := (exists_idempotent_pow (default : S)).choose_spec
+noncomputable def ofSimple [Inhabited S] [Pow S ℕ+] [PNatPowAssoc S] : ReesData S :=
+  let e := (default : S) ^ (exists_idempotent_ppow (default : S)).choose
+  have he : IsIdempotentElem e := (exists_idempotent_ppow (default : S)).choose_spec
   let h_r : ∀ j : LQuot S, ∃ z : S, z 𝓡 e ∧
       @Quotient.mk S ⟨(· 𝓛 ·), LEquiv.isEquivalence⟩ z = j := fun j => by
     obtain ⟨y, rfl⟩ := Quotient.exists_rep j
@@ -245,18 +246,18 @@ end ReesData
 
 section ReesTheorem
 
-variable {S : Type uS} [Finite S] [Semigroup S] [IsSimple S] [Inhabited S]
-
 open Semigroup
 
 /-- The Rees matrix semigroup type that is isomorphic to a finite simple semigroup `S`. -/
 noncomputable abbrev reesOf (S : Type uS) [Finite S] [Semigroup S] [IsSimple S]
-    [Inhabited S] : Type uS :=
+  [Inhabited S] [Pow S ℕ+] [PNatPowAssoc S] [Pow (WithOne S) ℕ+] [PNatPowAssoc (WithOne S)] :
+    Type uS :=
   Rees (ReesData.ofSimple (S := S)).sandwich
 
 /-- The explicit multiplicative equivalence from `S` to its Rees matrix semigroup. -/
 noncomputable def reesEquiv (S : Type uS) [Finite S] [Semigroup S] [IsSimple S]
-    [Inhabited S] : S ≃* reesOf S :=
+  [Inhabited S] [Pow S ℕ+] [PNatPowAssoc S] [Pow (WithOne S) ℕ+] [PNatPowAssoc (WithOne S)] :
+    S ≃* reesOf S :=
   (ReesData.ofSimple (S := S)).mulEquiv
 
 end ReesTheorem
